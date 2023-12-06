@@ -23,13 +23,18 @@ export default function SignUp() {
 		const { error } = await supabase.auth.signUp({ ...formData, options: { emailRedirectTo: `${origin}/auth/callback` } })
 		if (error) return toast.error(error.message)
 
-		return toast('Check email to continue sign in process')
+		return toast.success('Check email to continue sign in process')
 	}
 
 	return (
 		<Form {...form}>
 			<form className='w-full max-w-lg pt-20 mx-auto space-y-4' onSubmit={form.handleSubmit(signUp)}>
-				<h1 className='text-3xl font-bold tracking-tight text-primary'>Sign up</h1>
+				<div className='flex items-end justify-between'>
+					<h1 className='text-3xl font-bold tracking-tight text-primary'>Sign up</h1>
+					<Link className={buttonVariants({ variant: 'secondary' })} href='/sign-in'>
+						Sign in
+					</Link>
+				</div>
 				<FormField
 					control={form.control}
 					name='email'
@@ -56,12 +61,7 @@ export default function SignUp() {
 						</FormItem>
 					)}
 				/>
-				<div className='flex items-center justify-between'>
-					<Button type='submit'>Sign up</Button>
-					<Link className={buttonVariants({ variant: 'link' })} href='/sign-in'>
-						Already have an account?
-					</Link>
-				</div>
+				<Button type='submit'>Sign up</Button>
 			</form>
 		</Form>
 	)

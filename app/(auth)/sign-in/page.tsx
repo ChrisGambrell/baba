@@ -30,7 +30,12 @@ export default function SignIn() {
 	return (
 		<Form {...form}>
 			<form className='w-full max-w-lg pt-20 mx-auto space-y-4' onSubmit={form.handleSubmit(signIn)}>
-				<h1 className='text-3xl font-bold tracking-tight text-primary'>Sign in</h1>
+				<div className='flex items-end justify-between'>
+					<h1 className='text-3xl font-bold tracking-tight text-primary'>Sign in</h1>
+					<Link className={buttonVariants({ variant: 'secondary' })} href='/sign-up'>
+						Sign up
+					</Link>
+				</div>
 				<FormField
 					control={form.control}
 					name='email'
@@ -57,12 +62,7 @@ export default function SignIn() {
 						</FormItem>
 					)}
 				/>
-				<div className='flex items-center justify-between'>
-					<Button type='submit'>Sign in</Button>
-					<Link className={buttonVariants({ variant: 'link' })} href='/sign-up'>
-						Don't have an account?
-					</Link>
-				</div>
+				<Button type='submit'>Sign in</Button>
 			</form>
 		</Form>
 	)
