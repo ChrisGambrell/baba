@@ -1,46 +1,71 @@
+'use client'
+
 import { Button, buttonVariants } from '@/components/ui/button'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/client'
+import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
+import { z } from 'zod'
 
-export default function SignIn({ searchParams }: { searchParams: { message?: string } }) {
-	async function signIn(formData: FormData) {
-		'use server'
+const formSchema = z.object({ email: z.string().email(), password: z.string().min(1) })
+type TForm = z.infer<typeof formSchema>
 
-		const email = formData.get('email') as string
-		const password = formData.get('password') as string
-		const cookieStore = cookies()
-		const supabase = createClient(cookieStore)
+export default function SignIn() {
+	const router = useRouter()
+	const form = useForm<TForm>({ defaultValues: { email: '', password: '' }, resolver: zodResolver(formSchema) })
 
-		const { error } = await supabase.auth.signInWithPassword({ email, password })
-		if (error) return redirect(`/sign-in?message=${error.message}`)
+	async function signIn(formData: TForm) {
+		const supabase = createClient()
 
-		return redirect('/')
+		const { error } = await supabase.auth.signInWithPassword(formData)
+		if (error) return toast.error(error.message)
+
+		return router.push('/')
 	}
 
 	return (
 		<div className='w-screen h-screen'>
-			<form className='w-full max-w-lg pt-20 mx-auto space-y-4' action={signIn}>
-				<h1 className='text-3xl font-bold tracking-tight'>Sign in</h1>
-				<div className='space-y-1.5'>
-					<Label htmlFor='email'>Email address</Label>
-					<Input name='email' type='email' />
-				</div>
-				<div className='space-y-1.5'>
-					<Label htmlFor='password'>Password</Label>
-					<Input name='password' type='password' />
-				</div>
-				<div className='flex items-center justify-between'>
-					<Button>Sign in</Button>
-					<Link className={buttonVariants({ variant: 'link' })} href='/sign-up'>
-						Don't have an account?
-					</Link>
-				</div>
-				{searchParams.message && <p className='px-2 py-1 rounded-md text-foreground bg-primary/10'>{searchParams.message}</p>}
-			</form>
+			<Form {...form}>
+				<form className='w-full max-w-lg pt-20 mx-auto space-y-4' onSubmit={form.handleSubmit(signIn)}>
+					<h1 className='text-3xl font-bold tracking-tight text-primary'>Sign in</h1>
+					<FormField
+						control={form.control}
+						name='email'
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Email address</FormLabel>
+								<FormControl>
+									<Input placeholder='you@example.com' {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name='password'
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Password</FormLabel>
+								<FormControl>
+									<Input type='password' {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<div className='flex items-center justify-between'>
+						<Button type='submit'>Sign in</Button>
+						<Link className={buttonVariants({ variant: 'link' })} href='/sign-up'>
+							Don't have an account?
+						</Link>
+					</div>
+				</form>
+			</Form>
 		</div>
 	)
 }

@@ -1,47 +1,70 @@
+'use client'
+
 import { Button, buttonVariants } from '@/components/ui/button'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { createClient } from '@/lib/supabase/server'
-import { cookies, headers } from 'next/headers'
+import { createClient } from '@/lib/supabase/client'
+import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
+import { z } from 'zod'
 
-export default function SignUp({ searchParams }: { searchParams: { message?: string } }) {
-	async function signUp(formData: FormData) {
-		'use server'
+const formSchema = z.object({ email: z.string().email(), password: z.string().min(6) })
+type TForm = z.infer<typeof formSchema>
 
-		const origin = headers().get('origin')
-		const email = formData.get('email') as string
-		const password = formData.get('password') as string
-		const cookieStore = cookies()
-		const supabase = createClient(cookieStore)
+export default function SignUp() {
+	const form = useForm<TForm>({ defaultValues: { email: '', password: '' }, resolver: zodResolver(formSchema) })
 
-		const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${origin}/auth/callback` } })
-		if (error) return redirect(`/sign-up?message=${error.message}`)
+	async function signUp(formData: TForm) {
+		const origin = process.env.NEXT_PUBLIC_ORIGIN_URL
+		const supabase = createClient()
 
-		return redirect('/sign-up?message=Check email to continue sign in process')
+		const { error } = await supabase.auth.signUp({ ...formData, options: { emailRedirectTo: `${origin}/auth/callback` } })
+		if (error) return toast.error(error.message)
+
+		return toast('Check email to continue sign in process')
 	}
 
 	return (
 		<div className='w-screen h-screen'>
-			<form className='w-full max-w-lg pt-20 mx-auto space-y-4' action={signUp}>
-				<h1 className='text-3xl font-bold tracking-tight'>Sign up</h1>
-				<div className='space-y-1.5'>
-					<Label htmlFor='email'>Email address</Label>
-					<Input name='email' type='email' />
-				</div>
-				<div className='space-y-1.5'>
-					<Label htmlFor='password'>Password</Label>
-					<Input name='password' type='password' />
-				</div>
-				<div className='flex items-center justify-between'>
-					<Button>Sign up</Button>
-					<Link className={buttonVariants({ variant: 'link' })} href='/sign-in'>
-						Already have an account?
-					</Link>
-				</div>
-				{searchParams.message && <p className='px-2 py-1 rounded-md text-foreground bg-primary/10'>{searchParams.message}</p>}
-			</form>
+			<Form {...form}>
+				<form className='w-full max-w-lg pt-20 mx-auto space-y-4' onSubmit={form.handleSubmit(signUp)}>
+					<h1 className='text-3xl font-bold tracking-tight text-primary'>Sign up</h1>
+					<FormField
+						control={form.control}
+						name='email'
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Email address</FormLabel>
+								<FormControl>
+									<Input placeholder='you@example.com' {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name='password'
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Password</FormLabel>
+								<FormControl>
+									<Input type='password' {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<div className='flex items-center justify-between'>
+						<Button type='submit'>Sign up</Button>
+						<Link className={buttonVariants({ variant: 'link' })} href='/sign-in'>
+							Already have an account?
+						</Link>
+					</div>
+				</form>
+			</Form>
 		</div>
 	)
 }
