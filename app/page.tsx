@@ -1,3 +1,5 @@
+// TODO: Mobile view
+
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'

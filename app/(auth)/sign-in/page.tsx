@@ -64,7 +64,12 @@ export default function SignIn() {
 						</FormItem>
 					)}
 				/>
-				<Button type='submit'>Sign in</Button>
+				<div className='flex items-center justify-between'>
+					<Button type='submit'>Sign in</Button>
+					<Link className={buttonVariants({ variant: 'link' })} href='/account-recovery'>
+						Forgot password
+					</Link>
+				</div>
 			</form>
 		</Form>
 	)
