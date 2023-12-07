@@ -1,3 +1,5 @@
+// TODO: Mobile view
+
 'use client'
 
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -29,7 +31,7 @@ export default function SignIn() {
 
 	return (
 		<Form {...form}>
-			<form className='w-full max-w-lg pt-20 mx-auto space-y-4' onSubmit={form.handleSubmit(signIn)}>
+			<form className='space-y-4' onSubmit={form.handleSubmit(signIn)}>
 				<div className='flex items-end justify-between'>
 					<h1 className='text-3xl font-bold tracking-tight text-primary'>Sign in</h1>
 					<Link className={buttonVariants({ variant: 'secondary' })} href='/sign-up'>
